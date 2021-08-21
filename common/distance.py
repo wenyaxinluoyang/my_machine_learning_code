@@ -26,3 +26,11 @@ class Manhattan(Distance):
         return d
 
 
+class Minkowski(Distance):
+
+    def dist(self, x, y):
+        p = len(x)
+        t = np.sum(np.power(np.fabs(x - y), p))
+        d = pow(t, 1/p)
+        return d
+
