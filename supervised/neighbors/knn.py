@@ -29,11 +29,13 @@ class KNeighborsClassifier:
         else:
             raise Exception("dist_method 的参数只能从 ['Euclidean', 'Manhattan', 'Minkowski'] 中选择.")
 
-    def __init__(self, n_neighbors=10, algorithm='auto', dist_method='Euclidean', normalize=True):
+    def __init__(self, n_neighbors=5, algorithm='auto', dist_method='Euclidean', normalize=True, copy=True):
         '''
-        :param n_neighbors: 近邻个数
+        :param n_neighbors: 近邻个数, 默认为
         :param algorithm: 算法，auto暴力算法，kd_tree
         :param dist: 计算距离的方法，默认是欧式距离
+        :param normalize: 是否需要对特征进行归一化，默认为True
+        :param copy: copy为True在原数据的副本上进行操作。False在原数据上进行操作
         '''
         self.n_neighbors = n_neighbors
         self.algorithm = 'auto'
