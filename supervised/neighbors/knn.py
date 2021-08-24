@@ -144,6 +144,7 @@ def show_images(images):
 if __name__ == '__main__':
     # 手写数字数字集
     images, feature, labels = load_data()
+    # show_images(images[:4])
     print('样本:', feature.shape)
     x_train, x_test, y_train, y_test = train_test_split(feature, labels, test_size=0.2)
     print('训练样本:', x_train.shape, '测试样本:', x_test.shape)
@@ -152,10 +153,6 @@ if __name__ == '__main__':
     accuracy = model.score(x_test, y_test)
     print('准确率: ', round(accuracy, 2))
 
-
-
-
-    # show_images(images[:4])
 
 
 
