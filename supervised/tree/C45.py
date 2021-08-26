@@ -70,7 +70,7 @@ class DecisionTreeClassifier:
         '''
         获取最优特征
         :param data: DataFrame 由特征和目标组成，目标必须放在最后一行
-        :return: 最优特征，最大的信息增益
+        :return: 最优特征， 拥有最大信息增益比的特征
         '''
         columns = data.columns.tolist()
         target_name = columns[-1]
@@ -87,7 +87,7 @@ class DecisionTreeClassifier:
 
     def build_tree(self, data):
         '''
-        ID3构建决策树, 按照信息增益进行划分。
+        C45构建决策树, 按照信息增益比进行划分。
         :return:
         '''
         columns = data.columns.tolist()
@@ -100,6 +100,10 @@ class DecisionTreeClassifier:
         if len(feature_name) == 0:
             label = data[target_name].mode().values
             leaf_node = TreeNode(label=label)
+            return leaf_node
+        if len(feature_name) == 1 and len(data[feature_name].value_counts()) == 1:
+            label = data[target_name].mode().values
+            leaf_node = TreeNode(feat_name=feature_name[0], label=label)
             return leaf_node
         best_feature, max_gain = self.chose_best_feature(data)
         # print('='*50)
@@ -198,17 +202,56 @@ class DecisionTreeClassifier:
         accuracy = sum(y_pred == y_test) / len(y_test)
         return accuracy
 
+    def choice(self, x, t):
+        if x < t: return f'<{t}'
+        else: return f'>{t}'
+
+    def deal_continuous_var(self, df, cont_var, target_name):
+        result = {}
+        base_ent = self.entropy(df, target_name)
+        for col in cont_var:
+            values = df[col].values.tolist()
+            values.sort()
+            length = len(values)
+            points = []
+            for i in range(length):
+                if i + 1 < length:
+                    points.append((values[i] + values[i + 1]) / 2)
+            points = set(points)
+            max_gain, best_point = 0, None
+            for point in points:
+                df1 = df[df[col] > point]
+                df2 = df[df[col] < point]
+                weight1, weight2 = len(df1)/len(df), len(df2)/len(df)
+                # ent_col = 0
+                # if len(df1) != 0:
+                #     ent_col -= weight1*math.log(weight1, 2)
+                # if len(df2) != 0:
+                #     ent_col -= weight2*math.log(weight2, 2)
+                ent = weight1*self.entropy(df1, target_name) + weight2*self.entropy(df2, target_name)
+                gain = base_ent - ent
+                if gain > max_gain:
+                    max_gain = gain
+                    best_point = point
+            result[col] = best_point
+        for col in cont_var:
+            best_point = result[col]
+            df[col] = pd.Series(map(lambda x: self.choice(x, best_point), df[col]))
+        return df
+
 
 if __name__ == '__main__':
     data = pd.read_csv('data_set/data.csv')
+    cate_var, cont_var = ['hair', 'voice', 'ear_stud'], ['height']
     model = DecisionTreeClassifier()
+    data = model.deal_continuous_var(data, cont_var, target_name='labels')
     model.fit(data)
-    # root = model.root
+    root = model.root
     model.display_tree()
 
-    x_test = pd.DataFrame({'hair': ['long', 'long'], 'voice': ['thin', 'thick'],  'height': ['<172.0', '>172.0'], 'ear_stud': ['yes', 'no']})
-    y_pred = model.predict(x_test)
-    print(y_pred)
+    # x_test = pd.DataFrame({'hair': ['long', 'long'], 'voice': ['thin', 'thick'],  'height': ['<172.0', '>172.0'], 'ear_stud': ['yes', 'no']})
+    # y_pred = model.predict(x_test)
+    # print(y_pred)
     # columns = ['A', 'B', 'C']
     # print(columns[0: -1])
     # arr = np.array([[1, 2, 3], [3, 2, 3]])
