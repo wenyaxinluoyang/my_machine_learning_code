@@ -4,6 +4,8 @@ K近邻
 
 '''
 
+
+import pandas as pd
 from sklearn import datasets
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -144,9 +146,11 @@ def show_images(images):
 if __name__ == '__main__':
     # 手写数字数字集
     images, feature, labels = load_data()
-    # show_images(images[:4])
+    show_images(images[:4])
     print('样本:', feature.shape)
     x_train, x_test, y_train, y_test = train_test_split(feature, labels, test_size=0.2)
+    print(pd.Series(y_train).value_counts())
+    print(pd.Series(y_test).value_counts())
     print('训练样本:', x_train.shape, '测试样本:', x_test.shape)
     model = KNeighborsClassifier(n_neighbors=5, normalize=False)
     model.fit(x_train, y_train)
